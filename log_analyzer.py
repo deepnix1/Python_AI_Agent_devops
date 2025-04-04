@@ -1,23 +1,36 @@
 import openai
 import os
+from dotenv import load_dotenv
+import requests
 
-# OpenAI API Anahtarı
+load_dotenv()
+
 openai.api_key = os.getenv("OPENAI_API_KEY")
+SLACK_WEBHOOK_URL = os.getenv("SLACK_WEBHOOK_URL")
 
 def analyze_logs():
-    with open("logs/app.log", "r") as log_file:
-        logs = log_file.read()
+    with open("logs/app.log", "r") as file:
+        log_data = file.read()
 
-    response = openai.ChatCompletion.create(
-        model="gpt-4",
+    client = openai.OpenAI()
+
+    response = client.chat.completions.create(
+        model="gpt-3.5-turbo",
         messages=[
-            {"role": "system", "content": "You are an AI that analyzes DevOps logs and detects anomalies."},
-            {"role": "user", "content": f"Analyze these logs and find anomalies:\n{logs}"}
+            {"role": "system", "content": "You are a helpful AI log analyzer. Look for any unusual or error patterns in the logs."},
+            {"role": "user", "content": log_data}
         ]
     )
 
-    return response['choices'][0]['message']['content']
+    return response.choices[0].message.content.strip()
 
-if __name__ == "__main__":
-    analysis_result = analyze_logs()
-    print("Anomaly Analysis Result:", analysis_result)
+def send_alert(message):
+    payload = {"text": message}
+    requests.post(SLACK_WEBHOOK_URL, json=payload)
+
+# Anomali kontrolü
+result = analyze_logs()
+print("Analysis Result:", result)
+
+if "anomaly" in result.lower() or "error" in result.lower():
+    send_alert(f"🚨 AI Log Analyzer: Anomali tespit edildi! \n\n{result}")

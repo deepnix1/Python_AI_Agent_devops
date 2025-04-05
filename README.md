@@ -150,7 +150,4 @@ Pull requests are welcome. Let's make DevOps smarter with AI.
 
 ---
 
-## 📄 License
-
-MIT
 

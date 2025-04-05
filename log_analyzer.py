@@ -1,36 +1,29 @@
-import openai
 import os
 from dotenv import load_dotenv
-import requests
+from google import genai
 
 load_dotenv()
 
-openai.api_key = os.getenv("OPENAI_API_KEY")
-SLACK_WEBHOOK_URL = os.getenv("SLACK_WEBHOOK_URL")
+# Gemini API anahtarınızı ortam değişkeninden alıyoruz.
+api_key = os.getenv("GEMINI_API_KEY")
+
+# Google GenAI istemcisini API anahtarımızla başlatıyoruz.
+client = genai.Client(api_key=api_key)
 
 def analyze_logs():
-    with open("logs/app.log", "r") as file:
-        log_data = file.read()
+    try:
+        with open("logs/app.log", "r") as file:
+            log_data = file.read()
+    except FileNotFoundError:
+        return "cant find log file"
 
-    client = openai.OpenAI()
-
-    response = client.chat.completions.create(
-        model="gpt-3.5-turbo",
-        messages=[
-            {"role": "system", "content": "You are a helpful AI log analyzer. Look for any unusual or error patterns in the logs."},
-            {"role": "user", "content": log_data}
-        ]
+    # Log verisini Gemini AI ile analiz etmek için isteği gönderiyoruz.
+    response = client.models.generate_content(
+        model="gemini-2.0-flash",
+        contents=f"you are an AI analyzer.Please inform me of the things I need to change. If you detect any error or anomaly in the following logs, notify me.:\n\n{log_data}"
     )
+    return response.text.strip()
 
-    return response.choices[0].message.content.strip()
-
-def send_alert(message):
-    payload = {"text": message}
-    requests.post(SLACK_WEBHOOK_URL, json=payload)
-
-# Anomali kontrolü
-result = analyze_logs()
-print("Analysis Result:", result)
-
-if "anomaly" in result.lower() or "error" in result.lower():
-    send_alert(f"🚨 AI Log Analyzer: Anomali tespit edildi! \n\n{result}")
+if __name__ == "__main__":
+    result = analyze_logs()
+    print("Anomaly Analysis Result:", result)

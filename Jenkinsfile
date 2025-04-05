@@ -8,17 +8,18 @@ pipeline {
         }
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t flask-app .'
+                sh 'docker build -t ai-agent-app .'
             }
         }
-        stage('Run Tests') {
+        stage('Test') {
             steps {
-                sh 'pytest || echo "Testler başarısız oldu"'
+                // İsteğe bağlı: Test komutlarını burada çalıştırabilirsin
+                sh 'pytest --maxfail=1 --disable-warnings -q'
             }
         }
         stage('Deploy') {
             steps {
-                sh 'docker run -d -p 5000:5000 flask-app'
+                sh 'docker run -d -p 5000:5000 ai-agent-app'
             }
         }
     }

@@ -1,4 +1,4 @@
-# 🧠 AI-Powered Log Monitoring & Alerting with Prometheus + Grafana
+#  AI-Powered Log Monitoring & Alerting with Prometheus + Grafana
 
 A lightweight DevOps project that combines **Python**, **Prometheus**, **Grafana**, and **OpenAI** to analyze logs, detect anomalies, and alert you via **Slack**. Ideal for AI-integrated monitoring workflows in modern microservices.
 
